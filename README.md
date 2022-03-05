@@ -8,7 +8,7 @@ Table of Contents
 2. [Code Description](#code)
 3. [GUI](#gui)
 4. [How to Run](#run)
-5. [Dependencies](#dependencies)
+5. [Requirements](#dependencies)
 
 ## About the Project 
 This is task 7 in our course.
@@ -58,7 +58,7 @@ Do the same steps for the `clientapp.py`
 Write your Nickname and in the address bar write `127.0.0.1` then press on Login button.
 
 
-## Dependencies 
+## Requirements 
 This project is using Python version `3.9`.
-i am using `tPy - 2.0.0` for the UI implementasion
+i am using `QtPy - 2.0.0` for the UI implementasion
 And `PySide2 - 5.15.2` for the framework
