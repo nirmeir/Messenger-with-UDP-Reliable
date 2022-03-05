@@ -23,36 +23,23 @@ Step 2 - we need to add a feature of send files over UDP with congetion control 
 The code are seperate to Client and Server 
 
 ##### Server folder:
-in the Server folder thear is :
+in the Server folder there is :
+
+
 * Filesdir - this folder are keeping the file are avialebale to download for the client.
 
-* Logs - this folde are saving the logs between the server and the client 
- 
-* safeqthreads - this folder have 3 files :
-      - `Descriptors.py` - Implement stop_running attribute for our threads.
-      - `Errors.py` -Implement define errors.
-      - `SafeQThreads.py` - set the attribute of the threads.
+ - `Serverapp.py` - Module to handle communication of client connected with server 
 
- - `Logs.py` - here i create module to manage application loges and printing.
-
- - `Utils.py` - Implement functions are handles with all the communication between the Server and the Client.
  
-* Serverapp - 
 
 
 ##### Client folder:
-in the Client folder thear is :
+in the Client folder there is :
 
-* safeqthreads - this folder have 3 files :
-      - `Descriptors.py` - Implement stop_running attribute for our threads.
-      - `Errors.py` -Implement define errors.
-      - `SafeQThreads.py` - set the attribute of the threads.
 
-- `Logs.py` - here i create module to manage application loges and printing.
+- `backend.py` - Implements functions are handles with all the communication between the Server and the Client.
 
-- `Utils.py` - Implement functions are handles with all the communication between the Server and the Client.
-
-- `clientapp.py` - 
+- `clientapp.py` - represent all the GUI functions
 
 ## GUI Example 
 
@@ -63,8 +50,11 @@ in the Client folder thear is :
 
 Firstly, to run this project, download the files from the github.
 Then check if the requirements are install .
-After that run the `serverapp.py` and open the cmd in the Client folder of the project
-Write " python `clientapp.py` " then press Enter button .
+After that open the cmd in the Server folder of the project
+Write " python `servertapp.py` " then press Enter button .
+
+Do the same steps for the `clientapp.py`
+
 Write your Nickname and in the address bar write `127.0.0.1` then press on Login button.
 
 
