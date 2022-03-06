@@ -26,9 +26,9 @@ class OpCode:
 class Handler():
     """ Interface to handle current connected client"""
     _data_folder= "./filesdir"
-    _UDP_SIZE   = 512
-    _UDP_TIMEOUT= 3.0
-    
+    _UDP_SIZE = 512
+    _UDP_TIMEOUT = 3.0
+
     @classmethod
     def init(self):
         """ initialize handlers to respond to client requests """
@@ -41,7 +41,6 @@ class Handler():
                             OpCode.MSG      : self.handle_msg
 
                         }
-
     @classmethod
     def handle(self, opcode, ci):
         """ base function to handle client's request and pass control to respective handler
@@ -58,8 +57,7 @@ class Handler():
         messages = f"MSG_{messages}"
         
         ci.send(messages)
-
-
+        return True
 
     @classmethod
     def handle_lst(self, ci):
@@ -74,6 +72,7 @@ class Handler():
            resp += f'<"{f}">' 
         resp += '<end>'
         ci.send(resp)
+        return True
 
     @classmethod
     def _udp_packet(self, id, content):
@@ -82,38 +81,40 @@ class Handler():
         return packet
 
     @classmethod
-    def _send_over_udp(self, bytes_data, addr):
+    def _send_over_udp(cls, bytes_data, addr):
         """ send bytes_data over udp """
+
         def send_packet(udpsock, address, datatosend, seqnum):
+            resend_timeouts = [0.5, 1.5, 2.5]
             flag = True
             while flag:
-                packet = self._udp_packet(seqnum, datatosend)
+                packet = cls._udp_packet(seqnum, datatosend)
                 udpsock.sendto(packet, address)
-                
+
                 try:
-                    ack, _  = udpsock.recvfrom(self._UDP_SIZE) 
-                    if int(pickle.loads(ack)) == seqnum: 
+                    udpsock.settimeout(resend_timeouts.pop())
+                    ack, _ = udpsock.recvfrom(cls._UDP_SIZE)
+
+                    if int(pickle.loads(ack)) == seqnum:
                         flag = False
                 except Exception as e:
-                    print(f"Timed Out: Acknowledgement not received for '{seqnum}' ")
-                    print(f"resending packet '{seqnum}'")
+                    if len(resend_timeouts) == 0:
+                        return False
+
+                    else:
+                        print(f"Timed Out: Acknowledgement not received for '{seqnum}' ")
+                        print(f"resending packet '{seqnum}'")
+            return True
 
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        udp_sock.settimeout(self._UDP_TIMEOUT)
 
-        seqnumber   = randint(0, 4096)
-        stop        = False
+        seqnumber = randint(0, 4096)
+        stop = False
         while stop is False:
-            if len(bytes_data)+4 > self._UDP_SIZE:
-                data = bytes_data[:self._UDP_SIZE]
-                #data = self._udp_packet(seqnumber, data)
-                #udp_sock.sendto(data, addr)
-                send_packet(udp_sock, addr, data, seqnumber)
-                bytes_data= bytes_data[self._UDP_SIZE:]
-
-                # if((bytes_data <= (first_len/2)) and temp ==0 ):
-                #     temp=temp+1
-                #     stop = True
+            if len(bytes_data) + 4 > cls._UDP_SIZE:
+                data = bytes_data[:cls._UDP_SIZE]
+                stop = not send_packet(udp_sock, addr, data, seqnumber)
+                bytes_data = bytes_data[cls._UDP_SIZE:]
 
             else:
                 bytes_data += b"yyyy"
@@ -122,7 +123,6 @@ class Handler():
             seqnumber += 1
 
         udp_sock.close()
-
 
     @classmethod
     def handle_dl(self, ci):
@@ -144,15 +144,15 @@ class Handler():
                 return (None, 0)
 
         ci.send(OpCode.SI)
-        filename    = ci.receive()
-        file_path   = os.path.join(self._data_folder, filename)
+        filename = ci.receive()
+        file_path = os.path.join(self._data_folder, filename)
         if os.path.exists(file_path):
             bytes_data, length = read_file(file_path)
             if bytes_data:
                 ci.send(f'{length}')
                 resp = ci.receive()
                 if resp == OpCode.SI:
-                    user    = ci.ClientName
+                    user = ci.ClientName
                     udpaddr = ci.receive()
                     self._send_over_udp(bytes_data, udpaddr)  
                     resp = ci.receive()
@@ -177,12 +177,12 @@ class Handler():
             >>> @param:ci   -> ClientInterface instance, represents to current 
                                     connected client
         """
-        ci.send     (OpCode.SI)
-        target_client   = ci.receive()
-        ci.send     (OpCode.SI)
-        msgs            = ci.receive() 
+        ci.send(OpCode.SI)
+        target_client = ci.receive()
+        ci.send(OpCode.SI)
+        msgs = ci.receive()
         if Server.send(target_client, msgs):
-            ci.send (OpCode.ACK)
+            ci.send(OpCode.ACK)
         
         else:
             ci.send(OpCode.RST)
@@ -193,21 +193,21 @@ class Handler():
             >>> @param:client   -> ClientInterface instance, represents to current 
                                     connected client
         """
-        ci.send     (OpCode.SI)
-        msgs            = ci.receive() 
+        ci.send(OpCode.SI)
+        msgs = ci.receive()
         if Server.send_to_all(ci.ClientName, msgs):
             ci.send (OpCode.ACK)
         
         else:
             ci.send(OpCode.RST)
-        
+
     @classmethod
     def handle_ccn(self, ci):
         """ handle CCN request by client
             >>> @param:ci   -> ClientInterface instance, represents to current 
                                     connected client
         """
-        clients     = Server.connected_clients()
+        clients = Server.connected_clients()
         clients.remove(ci.ClientName)
         clients_str = f'<users_lst><{len(clients)}>'
         for cl in clients:
@@ -226,11 +226,11 @@ class ClientInterface(Thread):
         """
         super().__init__(**kwargs)
         
-        self._client    = client
-        self._addr      = addr
-        self._name      = name
-        self._STOP      = False
-        self._USER      = None
+        self._client = client
+        self._addr = addr
+        self._name = name
+        self._STOP = False
+        self._USER= None
 
     @property
     def Port(self):
@@ -281,7 +281,6 @@ class Server():
         self._self = Server(host, port, port_range)
         return self._self
 
-    #region Helpers
     @classmethod
     def client_messages(self, name):
         """ send scheduled messages for client 
@@ -294,7 +293,7 @@ class Server():
     def connected_clients(self):
         """ return name of all connected clients as list """
         return list( self._self._client_handlers.keys() )
-    
+
     @classmethod
     def send(self, name, message):
         """ send message to a connected client 
@@ -302,7 +301,7 @@ class Server():
             >>> @param:message  -> message to be sent to client
             >>> @return         -> True if message sent, otherwise False
         """
-        self    = self._self
+        self= self._self
         if name in self._client_handlers.keys():
             self._self._push_message(name, message)
             return True
@@ -317,7 +316,7 @@ class Server():
             >>> @param:message  -> message to be sent to clients
             >>> @return         -> True if message sent, otherwise False
         """
-        self    = self._self
+        self = self._self
         for client_name in self._client_handlers.keys():
             if client_name != name:
                 self._self._push_message(client_name, message)

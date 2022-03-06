@@ -10,7 +10,7 @@ class UiClient(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self._forms             = {}
+        self._forms = {}
         self.setWindowTitle("Client")
         Handler.init()
         self._client = Client(self)
@@ -18,21 +18,21 @@ class UiClient(QMainWindow):
         self._message_event.timeout.connect(self._request_messages)
         self._message_event.start(1000)
         self._init_client()
-    
+
     def _request_messages(self):
         """ request messages from server """
         if self._client.Connected:
             Handler.request_messages(self._client)
 
     def set_log(self, log_text, form='client'):
-        """ set logs over text area over ui form 
+        """ set logs over text area over ui form
             >>> @param:log_text -> str message to display over text edit area
             >>> @param:form     -> one of available forms ['client' for now]
         """
-        self._forms[form].te_logs.insertPlainText(f"{log_text} \n") 
-    
+        self._forms[form].te_logs.insertPlainText(f"{log_text} \n")
+
     def clear_log(self, form='client'):
-        """ clear log area over ui form 
+        """ clear log area over ui form
             >>> @param:form -> one of available forms ['client' for now]
         """
         self._forms[form].te_logs.clear()
@@ -130,14 +130,6 @@ class UiClient(QMainWindow):
         self.btn_send.setStyleSheet(u"background-color:rgba(225,225,225,255);")
         self.btn_send.setAutoDefault(False)
         self.btn_send.setFlat(False)
-        # self.btn_proceed = QPushButton(Dialog)
-        # self.btn_proceed.setObjectName(u"btn_proceed")
-        # self.btn_proceed.setEnabled(False)
-        # self.btn_proceed.setGeometry(QRect(700, 600, 100, 30))
-        # self.btn_proceed.setFont(font)
-        # self.btn_proceed.setStyleSheet(u"background-color:rgba(225,225,225,255);")
-        # self.btn_proceed.setAutoDefault(False)
-        # self.btn_proceed.setFlat(False)
         self.btn_download = QPushButton(Dialog)
         self.btn_download.setObjectName(u"btn_download")
         self.btn_download.setEnabled(False)
@@ -176,7 +168,7 @@ class UiClient(QMainWindow):
         self.btn_clear.setDefault(False)
         self.btn_serverfiles.setDefault(False)
         self.btn_send.setDefault(False)
-        # self.btn_proceed.setDefault(False)
+
         self.btn_download.setDefault(False)
 
 
@@ -202,56 +194,54 @@ class UiClient(QMainWindow):
         self.btn_download.setText(QCoreApplication.translate("Dialog", u"Download", None))
         self.label_5.setText(QCoreApplication.translate("Dialog", u"Client File Name (save as...)", None))
         self.label_6.setText(QCoreApplication.translate("Dialog", u"Server File Name", None))
-        # self.btn_proceed.setText(QCoreApplication.translate("Dialog", u"Proceed", None))
 
     # retranslateUi
 
     #region Client
     def _init_client(self):
-        self._forms['client']   = self
+        self._forms['client'] = self
         self.le_username.setFocus()
-        self.btn_login.clicked.connect       (self._on_login)
-        self.btn_showonline.clicked.connect  (self._on_showonline)
-        self.btn_clear.clicked.connect       (self._on_clear)
-        self.btn_serverfiles.clicked.connect (self._on_serverfiles)
-        self.btn_send.clicked.connect        (self._on_send)
-        self.btn_download.clicked.connect    (self._on_download)
-        # self.btn_proceed.clicked.connect (self._on_download())
-    
+        self.btn_login.clicked.connect(self._on_login)
+        self.btn_showonline.clicked.connect(self._on_showonline)
+        self.btn_clear.clicked.connect(self._on_clear)
+        self.btn_serverfiles.clicked.connect(self._on_serverfiles)
+        self.btn_send.clicked.connect(self._on_send)
+        self.btn_download.clicked.connect(self._on_download)
+
     def _enable_menu(self, enable=True):
         self._forms['client'].btn_showonline.setEnabled (enable)
         self._forms['client'].btn_serverfiles.setEnabled(enable)
-        self._forms['client'].btn_send.setEnabled       (enable)
-        self._forms['client'].btn_download.setEnabled   (enable)
+        self._forms['client'].btn_send.setEnabled(enable)
+        self._forms['client'].btn_download.setEnabled(enable)
         # self._forms['client'].btn_proceed.setEnabled   (enable)
 
-    
+
     def _enable_login(self, enable=True):
         self._forms['client'].btn_clear.setEnabled (enable)
         self._forms['client'].btn_login.setEnabled(enable)
 
     def _on_login(self):
         """ login button handler """
-        username = self._forms['client'].le_username.text() 
+        username = self._forms['client'].le_username.text()
         serverip = self._forms['client'].le_address.text()
-        
+
         flag, message = self._client.connect(username, serverip)
         if flag:
             self.set_log("connection established successfully")
             self._enable_menu()
             self._enable_login(False)
-        
+
         else:
             self.set_log(message)
-        
+
     def _on_showonline(self):
         """ show online button handler """
         resp = Handler.handle(OpCode.CCN, self._client)
         self.set_log(resp)
-    
+
     def _on_clear(self):
         """ clear button handler """
-        self._forms['client'].le_username.setText("") 
+        self._forms['client'].le_username.setText("")
         self._forms['client'].le_address.setText("")
 
     def _on_serverfiles(self):
@@ -287,20 +277,20 @@ class UiClient(QMainWindow):
         filename = self._forms['client'].le_serverfile.text()
         localfile= self._forms['client'].le_clientfile.text()
         localfile= filename if localfile == "" else localfile
-        
+
         if filename != "":
-            message = Handler.handle(OpCode.DL, self._client, 
+            message = Handler.handle(OpCode.DL, self._client,
                         {"filename":filename, "localfile":localfile, "set_pb":self.set_pb})
             self.set_log(message)
             clear_fields()
 
         else:
             self.set_log("[ERROR] please enter filename")
-    #endregion 
+    #endregion
 
 
 if __name__ == "__main__":
-    app     = QApplication(sys.argv)
-    main_win= UiClient()
+    app = QApplication(sys.argv)
+    main_win = UiClient()
     main_win.show()
     sys.exit(app.exec_())

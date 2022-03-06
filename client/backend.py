@@ -49,7 +49,7 @@ class Handler():
     def request_messages(self, client):
         client.send(OpCode.MSG)
         client.receive(msg=True)
-    
+
     @classmethod
     def handle_lst(self, client, args):
         """ handle LST operation, to list files at server 
@@ -74,14 +74,12 @@ class Handler():
                 pass
 
     @classmethod
-    def _receive_over_udp(self, length, udp_client, set_pb): 
+    def _receive_over_udp(self, length, udp_client, set_pb):
         """ receive udp packet over given port 
             @param:length   -> length of bytes to be received
             @param:addr     -> addr to receive data over
             @param:set_pb   -> func reference to set downloading progress over GUI
         """
-        def ask_to_pro(recvdlen, totallen):
-            value = int( (recvdlen/totallen)*100 )
 
         bytes_data = b""
         received_bytes = {}
@@ -113,9 +111,6 @@ class Handler():
 
         udp_client.close()
         return b"".join(received_bytes.values())
-
-
-
 
     @classmethod
     def handle_dl(self, client, args):
@@ -156,11 +151,9 @@ class Handler():
 
                 client.send(OpCode.ACK)
                 return f'User {client.name}  downloaded 100% out of file'
-        
+
         else:
             return "server is not ready to send file - try again"
-
-
 
     @classmethod
     def handle_cm(self, client, args):
@@ -182,6 +175,7 @@ class Handler():
                 resp = client.receive()
                 if resp == OpCode.ACK:
                     return f" {client.name}:" + "msg_str"
+
                 else:
                     return "server is failed to send messages - try again"
             else:
@@ -212,7 +206,6 @@ class Handler():
 
         else:
             return "server is not ready to send messages - try again"
-
 
     @classmethod
     def handle_ccn(self, client, args):
@@ -306,7 +299,7 @@ class Client():
             >>> @param:bytes_len-> length of byte data to be received from server
             >>> @param:msg      -> flag to mark receiving data as messages
         """
-        data_str    = pickle.loads(self._client.recv(bytes_len) )
+        data_str = pickle.loads(self._client.recv(bytes_len) )
         while self.is_message(data_str):
             if len(data_str) > 4: 
                 data_str = data_str.replace("MSG_", "")
