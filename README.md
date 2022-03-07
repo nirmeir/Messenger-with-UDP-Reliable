@@ -1,5 +1,5 @@
 
-##  Final Project - Chat base on Netwoek
+##  Final Project - Chat base on Network
 
 **Created by Nir Meir**
 
